@@ -1,122 +1,59 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from 'react';
+import Navbar from './components/Navbar';
+import Hero from './components/Hero';
+import Calculator from './components/Calculator';
+import LoginCard from './components/Login/LoginCard';
+import RegisterCard from './components/Register/RegisterCard';
+import ProblemSection from './components/ProblemSection';
+import SolutionSection from './components/SolutionSection';
+import Dashboard from './components/Dashboard';
 
 function App() {
-  const [count, setCount] = useState(0)
+  // State ini untuk melacak view aktif: 'calculator', 'login', 'register', atau 'dashboard'
+  const [currentView, setCurrentView] = useState('calculator');
+  const [user, setUser] = useState(null);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="min-h-screen bg-slate-100 font-sans flex flex-col">
+      {currentView !== 'dashboard' && <Navbar currentView={currentView} onNavigate={setCurrentView} />}
+      <main className="flex-1 w-full flex items-center p-8">
+        <div className="w-full max-w-[1400px] mx-auto bg-white rounded-[2.5rem] shadow-[0_30px_100px_rgba(15,23,42,0.28)] border border-slate-200/50 overflow-hidden min-h-[80vh] flex flex-col justify-center">
+          
+          {currentView === 'dashboard' ? (
+            <Dashboard user={user} onLogout={() => { setUser(null); setCurrentView('calculator'); }} />
+          ) : (
+            <>
+              {/* Main Grid for Hero and Interactive Card */}
+              <div className="px-8 lg:px-20 py-16 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <Hero onNavigate={setCurrentView} />
+                {currentView === 'calculator' && <Calculator />}
+                {currentView === 'login' && (
+                  <LoginCard 
+                    onNavigate={setCurrentView} 
+                    onLoginSuccess={(username) => {
+                      setUser({ username });
+                      setCurrentView('dashboard');
+                    }} 
+                  />
+                )}
+                {currentView === 'register' && <RegisterCard onNavigate={setCurrentView} />}
+              </div>
 
-      <div className="ticks"></div>
+              {/* Problem and Solution Sections on Home View (Scroll down) */}
+              {currentView === 'calculator' && (
+                <div className="bg-slate-50/60 border-t border-slate-100/80 px-8 lg:px-20 py-20 space-y-20">
+                  <ProblemSection />
+                  <SolutionSection />
+                </div>
+              )}
+            </>
+          )}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      </main>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;
