@@ -3,7 +3,7 @@ import LoginHeader from './LoginHeader';
 import InputField from './InputField';
 import LoginButton from './LoginButton';
 
-function LoginCard({ onNavigate }) {
+function LoginCard({ onNavigate, onLoginSuccess }) {
   const [formData, setFormData] = useState({
     username: '',
     password: ''
@@ -54,14 +54,15 @@ function LoginCard({ onNavigate }) {
     setTimeout(() => {
       setIsLoading(false);
       
-      // Simple mock login validation: "admin" / "admin" or just any successful mock login
-      if (formData.username === 'admin' || formData.username.includes('taxy')) {
-        setLoginSuccess(true);
-      } else {
-        // If not matching, we still allow success for testing, or give a friendly hint
-        // Let's set success but show a message, or simply log in successfully for demo purposes!
-        setLoginSuccess(true);
-      }
+      const username = formData.username || 'admin';
+      setLoginSuccess(true);
+      
+      // Automatically redirect after 1.2 seconds of animation
+      setTimeout(() => {
+        if (onLoginSuccess) {
+          onLoginSuccess(username);
+        }
+      }, 1200);
     }, 1500);
   };
 

@@ -17,7 +17,7 @@ function Calculator() {
   // === HANDLER INPUT ANGKA ===
   // Menyimpan string angka mentah tanpa huruf/simbol ke dalam state
   const handleFormatRupiah = (e, setter) => {
-    const value = e.target.value.replace(/\D/g, ''); // Hanya ambil digit angka
+    const value = e.target.value.replace(/\D/g, ''); // Hanya untuk mengambil digit angkanya saja
     setter(value);
   };
 
@@ -53,13 +53,13 @@ function Calculator() {
         sisaPkp -= 60000000;
         tarifAktif = '15%';
 
-        if (sisaPkp <= 190000000) { // Lapis kedua sampai 250jt
+        if (sisaPkp <= 190000000) {
           pajakTahunan += sisaPkp * 0.15;
         } else {
           pajakTahunan += 190000000 * 0.15;
           sisaPkp -= 190000000;
           tarifAktif = '25%';
-          pajakTahunan += sisaPkp * 0.25; // Lapis berikutnya
+          pajakTahunan += sisaPkp * 0.25;
         }
       }
     }
@@ -127,7 +127,6 @@ function Calculator() {
                 <input
                   type="text"
                   placeholder="0"
-                  // Tampilkan dengan titik ke user, tapi nilainya dikontrol oleh state angka mentah
                   value={gaji ? new Intl.NumberFormat('id-ID').format(gaji) : ''}
                   onChange={(e) => handleFormatRupiah(e, setGaji)}
                   className="w-full border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white text-sm"
