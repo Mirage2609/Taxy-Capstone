@@ -7,11 +7,21 @@ import RegisterCard from './components/Register/RegisterCard';
 import ProblemSection from './components/ProblemSection';
 import SolutionSection from './components/SolutionSection';
 import Dashboard from './components/Dashboard';
+import FeatureSection from './components/FeatureSection';
+import EdukasiSection from './components/EdukasiSection';
+import CaraKerjaSection from './components/CaraKerjaSection';
+import CTASection from './components/CTASection';
+import FAQSection from './components/FAQSection';
+import Footer from './components/Footer';
 
 function App() {
   // State ini untuk melacak view aktif: 'calculator', 'login', 'register', atau 'dashboard'
   const [currentView, setCurrentView] = useState('calculator');
   const [user, setUser] = useState(null);
+
+  const scrollToCalculator = () => {
+    document.getElementById('section-calculator')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
     <div className="min-h-screen bg-slate-100 font-sans flex flex-col">
@@ -24,7 +34,7 @@ function App() {
           ) : (
             <>
               {/* Main Grid for Hero and Interactive Card */}
-              <div className="px-8 lg:px-20 py-16 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              <div id="section-calculator" className="px-8 lg:px-20 py-16 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <Hero onNavigate={setCurrentView} />
                 {currentView === 'calculator' && <Calculator />}
                 {currentView === 'login' && (
@@ -44,7 +54,12 @@ function App() {
                 <div className="bg-slate-50/60 border-t border-slate-100/80 px-8 lg:px-20 py-20 space-y-20">
                   <ProblemSection />
                   <SolutionSection />
-                </div>
+                  <div id="section-fitur"><FeatureSection /></div>
+                  <div id="section-edukasi"><EdukasiSection /></div>
+                  <CaraKerjaSection />
+                  <CTASection onNavigate={setCurrentView} onScrollToCalculator={scrollToCalculator} />
+                  <div id="section-faq"><FAQSection /></div>
+                  <Footer onNavigate={setCurrentView} />
               )}
             </>
           )}
