@@ -28,7 +28,7 @@ function App() {
       {currentView !== 'dashboard' && <Navbar currentView={currentView} onNavigate={setCurrentView} />}
       <main className="flex-1 w-full flex items-center p-8">
         <div className="w-full max-w-[1400px] mx-auto bg-white rounded-[2.5rem] shadow-[0_30px_100px_rgba(15,23,42,0.28)] border border-slate-200/50 overflow-hidden min-h-[80vh] flex flex-col justify-center">
-          
+
           {currentView === 'dashboard' ? (
             <Dashboard user={user} onLogout={() => { setUser(null); setCurrentView('calculator'); }} />
           ) : (
@@ -38,12 +38,12 @@ function App() {
                 <Hero onNavigate={setCurrentView} />
                 {currentView === 'calculator' && <Calculator />}
                 {currentView === 'login' && (
-                  <LoginCard 
-                    onNavigate={setCurrentView} 
+                  <LoginCard
+                    onNavigate={setCurrentView}
                     onLoginSuccess={(username) => {
                       setUser({ username });
                       setCurrentView('dashboard');
-                    }} 
+                    }}
                   />
                 )}
                 {currentView === 'register' && <RegisterCard onNavigate={setCurrentView} />}
@@ -60,6 +60,7 @@ function App() {
                   <CTASection onNavigate={setCurrentView} onScrollToCalculator={scrollToCalculator} />
                   <div id="section-faq"><FAQSection /></div>
                   <Footer onNavigate={setCurrentView} />
+                </div>
               )}
             </>
           )}
