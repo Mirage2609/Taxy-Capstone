@@ -1,4 +1,15 @@
 function Navbar({ currentView, onNavigate }) {
+    const scrollToSection = (id) => {
+        if (currentView !== 'calculator') {
+            onNavigate('calculator');
+            setTimeout(() => {
+                document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        } else {
+            document.getElementById(id)?.scrollIntoView({ behavior : 'smooth' });
+        }
+    };
+    
     return (
         <nav className="w-full bg-slate-100 sticky top-0 z-50">
             <div className="max-w-[1400px] mx-auto flex justify-between items-center px-10 py-5">
@@ -24,7 +35,7 @@ function Navbar({ currentView, onNavigate }) {
                         Home
                     </li>
                     <li 
-                        onClick={() => onNavigate('calculator')}
+                        onClick={() => scrollToSection('section-calculator')}
                         className={`cursor-pointer transition pb-1 ${
                             currentView === 'calculator' 
                                 ? 'text-blue-600 font-bold' 
@@ -33,9 +44,9 @@ function Navbar({ currentView, onNavigate }) {
                     >
                         Calculator
                     </li>
-                    <li className="cursor-pointer hover:text-blue-600 transition pb-1">Fitur</li>
-                    <li className="cursor-pointer hover:text-blue-600 transition pb-1">Edukasi</li>
-                    <li className="cursor-pointer hover:text-blue-600 transition pb-1">FAQ</li>
+                    <li onClick={() => scrollToSection('section-fitur')} className="cursor-pointer hover:text-blue-600 transition pb-1">Fitur</li>
+                    <li onClick={() => scrollToSection('section-edukasi')} className="cursor-pointer hover:text-blue-600 transition pb-1">Edukasi</li>
+                    <li onClick={() => scrollToSection('section-faq')} className="cursor-pointer hover:text-blue-600 transition pb-1">FAQ</li>
                 </ul>
                 
                 {/* Auth Buttons */}
