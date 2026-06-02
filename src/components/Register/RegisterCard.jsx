@@ -2,6 +2,7 @@ import { useState } from 'react';
 import RegisterHeader from './RegisterHeader';
 import InputField from '../Login/InputField';
 import LoginButton from '../Login/LoginButton';
+import { apiService } from '../../services/api';
 
 function RegisterCard({ onNavigate }) {
   const [formData, setFormData] = useState({
@@ -23,10 +24,11 @@ function RegisterCard({ onNavigate }) {
       [name]: value
     }));
 
-    if (errors[name]) {
+    if (errors[name] || errors.general) {
       setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: '',
+        general: ''
       }));
     }
   };
@@ -60,17 +62,26 @@ function RegisterCard({ onNavigate }) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     setIsLoading(true);
+    setErrors({});
 
-    // Simulasi API untuk registarasi
-    setTimeout(() => {
+    try {
+      await apiService.registerUser({
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        jobCategory: formData.jobCategory,
+      });
       setIsLoading(false);
       setRegisterSuccess(true);
-    }, 1500);
+    } catch (err) {
+      setIsLoading(false);
+      setErrors({ general: err.message });
+    }
   };
 
   // Dapetin rekomendasi yang disesuaikan berdasarkan kategori pekerjaan
@@ -166,6 +177,12 @@ function RegisterCard({ onNavigate }) {
           // Form State
           <form onSubmit={handleSubmit} className="flex flex-col">
             <RegisterHeader />
+
+            {errors.general && (
+              <div className="bg-red-50 text-red-600 border border-red-100 rounded-2xl p-4 text-xs font-bold text-left mb-4 animate-scale-up">
+                ⚠️ {errors.general}
+              </div>
+            )}
 
             {/* Inputs Container */}
             <div className="space-y-1">

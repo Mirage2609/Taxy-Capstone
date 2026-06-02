@@ -2,6 +2,7 @@ import { useState } from 'react';
 import LoginHeader from './LoginHeader';
 import InputField from './InputField';
 import LoginButton from './LoginButton';
+import { apiService } from '../../services/api';
 
 function LoginCard({ onNavigate, onLoginSuccess }) {
   const [formData, setFormData] = useState({
@@ -21,10 +22,11 @@ function LoginCard({ onNavigate, onLoginSuccess }) {
     }));
     
     // Clear errors when typing
-    if (errors[name]) {
+    if (errors[name] || errors.general) {
       setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: '',
+        general: ''
       }));
     }
   };
@@ -44,26 +46,31 @@ function LoginCard({ onNavigate, onLoginSuccess }) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     setIsLoading(true);
+    setErrors({});
     
-    // Simulate API Auth Request
-    setTimeout(() => {
+    try {
+      const response = await apiService.loginUser({
+        username: formData.username,
+        password: formData.password
+      });
       setIsLoading(false);
-      
-      const username = formData.username || 'admin';
       setLoginSuccess(true);
       
       // Automatically redirect after 1.2 seconds of animation
       setTimeout(() => {
         if (onLoginSuccess) {
-          onLoginSuccess(username);
+          onLoginSuccess(response.user.username);
         }
       }, 1200);
-    }, 1500);
+    } catch (err) {
+      setIsLoading(false);
+      setErrors({ general: err.message });
+    }
   };
 
   return (
@@ -99,6 +106,12 @@ function LoginCard({ onNavigate, onLoginSuccess }) {
           <form onSubmit={handleSubmit} className="flex flex-col">
             {/* Header Component */}
             <LoginHeader />
+            
+            {errors.general && (
+              <div className="bg-red-50 text-red-600 border border-red-100 rounded-2xl p-4 text-xs font-bold text-left mb-4 animate-scale-up">
+                ⚠️ {errors.general}
+              </div>
+            )}
             
             {/* Inputs Container */}
             <div className="space-y-1">

@@ -7,6 +7,7 @@ import QuickCalculator from './Dashboard/QuickCalculator';
 import IncomeComposition from './Dashboard/IncomeComposition';
 import HistoryList from './Dashboard/HistoryList';
 import Chatbot from './Dashboard/Chatbot';
+import { apiService } from '../services/api';
 
 function Dashboard({ user, onLogout }) {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -24,28 +25,20 @@ function Dashboard({ user, onLogout }) {
   const [adaNpwp, setAdaNpwp] = useState(true);
 
   // History state
-  const [history, setHistory] = useState([
-    {
-      id: 1,
-      timestamp: '2026-05-31 14:00',
-      jenis: 'PPH 21',
-      gaji: 8000000,
-      status: 'TK/0',
-      tanggungan: 0,
-      pajakBulanan: 175000,
-      takeHomePay: 7825000
-    },
-    {
-      id: 2,
-      timestamp: '2026-05-31 10:15',
-      jenis: 'PPH 23',
-      gaji: 15000000,
-      status: 'Jasa (2%)',
-      tanggungan: '-',
-      pajakBulanan: 300000,
-      takeHomePay: 14700000
+  const [history, setHistory] = useState([]);
+
+  // Load history from API on mount/user change
+  useEffect(() => {
+    if (user?.username) {
+      apiService.getHistory(user.username)
+        .then((data) => {
+          setHistory(data);
+        })
+        .catch((err) => {
+          console.error("Gagal mengambil riwayat dari API:", err);
+        });
     }
-  ]);
+  }, [user]);
 
   // Chatbot states
   const [messages, setMessages] = useState([
@@ -69,121 +62,50 @@ function Dashboard({ user, onLogout }) {
     setter(Number(value) || 0);
   };
 
-  // === CALCULATOR PPh 21 CALCULATION ===
-  const hitungPph21 = () => {
-    const numGaji = Number(gaji) || 0;
-    if (numGaji === 0) return { bulanan: 0, tahunan: 0, thp: 0, ptkp: 54000000, pkp: 0, persentase: '0%', rate: 0 };
+  // === STATE HASIL PERHITUNGAN DINAMIS DARI BACKEND ===
+  const [resPph21, setResPph21] = useState({ bulanan: 0, tahunan: 0, thp: 0, ptkp: 54000000, pkp: 0, persentase: '0%', rate: 0 });
+  const [resPph23, setResPph23] = useState({ potongan: 0, thp: 0, tarifAkhir: 0 });
 
-    const gajiSetahun = numGaji * 12;
-
-    // Determine PTKP based on Status & Tanggungan
-    let basePtkp = 54000000; // TK/0 basis
-    const numTanggungan = Number(tanggungan) || 0;
-
-    if (status.startsWith('K')) {
-      basePtkp = 58500000; // K/0
-    }
-    
-    const ptkp = basePtkp + (numTanggungan * 4500000);
-
-    // Calculate PKP
-    let pkp = gajiSetahun - ptkp;
-    if (pkp < 0) pkp = 0;
-
-    // Calculate Progressive Tax
-    let pajakTahunan = 0;
-    let sisaPkp = pkp;
-    let rateStr = '0%';
-    let maxRate = 0;
-
-    if (sisaPkp > 0) {
-      rateStr = '5%';
-      maxRate = 5;
-      if (sisaPkp <= 60000000) {
-        pajakTahunan += sisaPkp * 0.05;
-        sisaPkp = 0;
-      } else {
-        pajakTahunan += 60000000 * 0.05;
-        sisaPkp -= 60000000;
-        rateStr = '15%';
-        maxRate = 15;
-
-        if (sisaPkp <= 190000000) {
-          pajakTahunan += sisaPkp * 0.15;
-          sisaPkp = 0;
+  // Server-Side calculation for Dashboard inputs
+  useEffect(() => {
+    const fetchCalculation = async () => {
+      try {
+        if (jenisPajak === 'PPH21') {
+          const res = await apiService.calculateTax({
+            jenisPajak: 'PPH21',
+            gaji: Number(gaji) || 0,
+            status,
+            tanggungan: Number(tanggungan) || 0
+          });
+          setResPph21(res);
         } else {
-          pajakTahunan += 190000000 * 0.15;
-          sisaPkp -= 190000000;
-          rateStr = '25%';
-          maxRate = 25;
-
-          if (sisaPkp <= 250000000) {
-            pajakTahunan += sisaPkp * 0.25;
-            sisaPkp = 0;
-          } else {
-            pajakTahunan += 250000000 * 0.25;
-            sisaPkp -= 250000000;
-            rateStr = '30%';
-            maxRate = 30;
-
-            if (sisaPkp <= 4500000000) {
-              pajakTahunan += sisaPkp * 0.30;
-              sisaPkp = 0;
-            } else {
-              pajakTahunan += 4500000000 * 0.30;
-              sisaPkp -= 4500000000;
-              rateStr = '35%';
-              maxRate = 35;
-              pajakTahunan += sisaPkp * 0.35;
-            }
-          }
+          const res = await apiService.calculateTax({
+            jenisPajak: 'PPH23',
+            bruto: Number(bruto) || 0,
+            jenisObjek,
+            adaNpwp
+          });
+          setResPph23(res);
         }
+      } catch (err) {
+        console.error("Gagal melakukan kalkulasi pajak di server:", err);
       }
-    }
-
-    const pajakBulanan = pajakTahunan / 12;
-    const thp = numGaji - pajakBulanan;
-
-    return {
-      bulanan: Math.round(pajakBulanan),
-      tahunan: Math.round(pajakTahunan),
-      thp: Math.round(thp),
-      ptkp: ptkp,
-      pkp: pkp,
-      persentase: rateStr,
-      rate: maxRate
     };
-  };
 
-  // === CALCULATOR PPh 23 CALCULATION ===
-  const hitungPph23 = () => {
-    const numBruto = Number(bruto) || 0;
-    if (numBruto === 0) return { potongan: 0, thp: 0, tarifAkhir: 0 };
-
-    let tarifDasar = Number(jenisObjek);
-    let tarifAkhir = adaNpwp ? tarifDasar : tarifDasar * 2;
-
-    const potonganPajak = numBruto * tarifAkhir;
-    const thp = numBruto - potonganPajak;
-
-    return {
-      potongan: Math.round(potonganPajak),
-      thp: Math.round(thp),
-      tarifAkhir: tarifAkhir * 100
-    };
-  };
-
-  const resPph21 = hitungPph21();
-  const resPph23 = hitungPph23();
+    fetchCalculation();
+  }, [jenisPajak, gaji, status, tanggungan, bruto, jenisObjek, adaNpwp]);
 
   const pajakBulanan = jenisPajak === 'PPH21' ? resPph21.bulanan : resPph23.potongan;
   const takeHomePay = jenisPajak === 'PPH21' ? resPph21.thp : resPph23.thp;
   const totalGaji = jenisPajak === 'PPH21' ? gaji : bruto;
 
-  const handleSaveToHistory = () => {
-    const newHistoryItem = {
-      id: Date.now(),
-      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 16),
+  const handleSaveToHistory = async () => {
+    if (!user?.username) {
+      alert("Sesi user tidak aktif!");
+      return;
+    }
+
+    const payload = {
       jenis: jenisPajak === 'PPH21' ? 'PPH 21' : 'PPH 23',
       gaji: totalGaji,
       status: jenisPajak === 'PPH21' ? `${status} (Dep: ${tanggungan})` : `Jasa (${jenisObjek === '0.02' ? '2%' : '15%'})`,
@@ -191,8 +113,15 @@ function Dashboard({ user, onLogout }) {
       pajakBulanan: pajakBulanan,
       takeHomePay: takeHomePay
     };
-    setHistory((prev) => [newHistoryItem, ...prev]);
-    alert('Simulasi perhitungan berhasil disimpan ke riwayat!');
+
+    try {
+      const response = await apiService.saveHistory(user.username, payload);
+      setHistory((prev) => [response.data, ...prev]);
+      alert('Simulasi perhitungan berhasil disimpan ke riwayat!');
+    } catch (err) {
+      console.error(err);
+      alert('Gagal menyimpan riwayat: ' + err.message);
+    }
   };
 
   const handlePayment = () => {
@@ -423,6 +352,7 @@ function Dashboard({ user, onLogout }) {
               history={history}
               setHistory={setHistory}
               formatRupiah={formatRupiah}
+              user={user}
             />
           )}
 

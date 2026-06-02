@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { apiService } from '../services/api';
 
 function Calculator() {
   // === STATE UNTUK TOGGLE PPH ===
@@ -14,88 +15,44 @@ function Calculator() {
   const [jenisObjek, setJenisObjek] = useState('0.02');
   const [adaNpwp, setAdaNpwp] = useState(true);
 
+  // === STATE HASIL PERHITUNGAN DARI BACKEND ===
+  const [hasilPph21, setHasilPph21] = useState({ bulanan: 0, tahunan: 0, thp: 0, pkp: 0, persentase: '0%' });
+  const [hasilPph23, setHasilPph23] = useState({ potongan: 0, thp: 0, tarifAkhir: 0 });
+
   // === HANDLER INPUT ANGKA ===
-  // Menyimpan string angka mentah tanpa huruf/simbol ke dalam state
   const handleFormatRupiah = (e, setter) => {
-    const value = e.target.value.replace(/\D/g, ''); // Hanya untuk mengambil digit angkanya saja
+    const value = e.target.value.replace(/\D/g, ''); // Hanya mengambil digit angkanya
     setter(value);
   };
 
-  // === FUNGSI KALKULASI PPH 21 (PERBAIKAN) ===
-  const hitungPph21 = () => {
-    // Karena state pada 'gaji' hanya berisi angka mentah berupa tipe (string), langsung diubah ke Number
-    const numGaji = Number(gaji) || 0;
-    if (numGaji === 0) return { bulanan: 0, tahunan: 0, thp: 0, pkp: 0, persentase: '0%' };
-
-    const gajiSetahun = numGaji * 12;
-
-    // Tentukan PTKP berdasarkan standard dasar (TK/0 = 54 Juta)
-    // Harusnya berubah sesuai dropdown Status + Tanggungan
-    let ptkp = 54000000;
-    if (status === 'K/0') ptkp = 58500000;
-    if (status === 'K/1') ptkp = 63000000;
-
-    // Hitung PKP (Penghasilan Kena Pajak)
-    let pkp = gajiSetahun - ptkp;
-    if (pkp < 0) pkp = 0;
-
-    // Hitung Pajak Setahun dengan Tarif Progresif Pasal 17 UU HPP
-    let pajakTahunan = 0;
-    let sisaPkp = pkp;
-    let tarifAktif = '0%';
-
-    if (sisaPkp > 0) {
-      tarifAktif = '5%';
-      if (sisaPkp <= 60000000) {
-        pajakTahunan += sisaPkp * 0.05;
-      } else {
-        pajakTahunan += 60000000 * 0.05;
-        sisaPkp -= 60000000;
-        tarifAktif = '15%';
-
-        if (sisaPkp <= 190000000) {
-          pajakTahunan += sisaPkp * 0.15;
+  // === ASYNC CALCULATION EFFECT ===
+  useEffect(() => {
+    const fetchCalculation = async () => {
+      try {
+        if (jenisPajak === 'PPH21') {
+          const res = await apiService.calculateTax({
+            jenisPajak: 'PPH21',
+            gaji: Number(gaji) || 0,
+            status,
+            tanggungan: Number(tanggungan) || 0
+          });
+          setHasilPph21(res);
         } else {
-          pajakTahunan += 190000000 * 0.15;
-          sisaPkp -= 190000000;
-          tarifAktif = '25%';
-          pajakTahunan += sisaPkp * 0.25;
+          const res = await apiService.calculateTax({
+            jenisPajak: 'PPH23',
+            bruto: Number(bruto) || 0,
+            jenisObjek,
+            adaNpwp
+          });
+          setHasilPph23(res);
         }
+      } catch (err) {
+        console.error("Gagal menghitung pajak di server:", err);
       }
-    }
-
-    const pajakBulanan = pajakTahunan / 12;
-    const thp = numGaji - pajakBulanan;
-
-    return {
-      bulanan: Math.round(pajakBulanan),
-      tahunan: Math.round(pajakTahunan),
-      thp: Math.round(thp),
-      pkp: pkp,
-      persentase: tarifAktif
     };
-  };
 
-  // === FUNGSI KALKULASI PPH 23 ===
-  const hitungPph23 = () => {
-    const numBruto = Number(bruto) || 0;
-    if (numBruto === 0) return { potongan: 0, thp: 0, tarifAkhir: 0 };
-
-    let tarifDasar = Number(jenisObjek);
-    let tarifAkhir = adaNpwp ? tarifDasar : tarifDasar * 2;
-
-    const potonganPajak = numBruto * tarifAkhir;
-    const thp = numBruto - potonganPajak;
-
-    return {
-      potongan: Math.round(potonganPajak),
-      thp: Math.round(thp),
-      tarifAkhir: tarifAkhir * 100
-    };
-  };
-
-  const hasilPph21 = hitungPph21();
-  const hasilPph23 = hitungPph23();
+    fetchCalculation();
+  }, [jenisPajak, gaji, status, tanggungan, bruto, jenisObjek, adaNpwp]);
 
   return (
     <div className="relative w-full flex justify-center lg:justify-end">

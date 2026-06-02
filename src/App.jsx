@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Calculator from './components/Calculator';
@@ -13,11 +13,21 @@ import CaraKerjaSection from './components/CaraKerjaSection';
 import CTASection from './components/CTASection';
 import FAQSection from './components/FAQSection';
 import Footer from './components/Footer';
+import { apiService } from './services/api';
 
 function App() {
   // State ini untuk melacak view aktif: 'calculator', 'login', 'register', atau 'dashboard'
   const [currentView, setCurrentView] = useState('calculator');
   const [user, setUser] = useState(null);
+
+  // Restore session on mount
+  useEffect(() => {
+    const activeUser = apiService.getActiveUser();
+    if (activeUser) {
+      setUser(activeUser);
+      setCurrentView('dashboard');
+    }
+  }, []);
 
   const scrollToCalculator = () => {
     document.getElementById('section-calculator')?.scrollIntoView({ behavior: 'smooth' });
@@ -25,12 +35,23 @@ function App() {
 
   return (
     <div className="min-h-screen bg-slate-100 font-sans flex flex-col">
-      {currentView !== 'dashboard' && <Navbar currentView={currentView} onNavigate={setCurrentView} />}
+      {currentView !== 'dashboard' && (
+        <Navbar 
+          currentView={currentView} 
+          onNavigate={setCurrentView} 
+          user={user}
+          onLogout={() => {
+            apiService.logoutUser();
+            setUser(null);
+            setCurrentView('calculator');
+          }}
+        />
+      )}
       <main className="flex-1 w-full flex items-center p-8">
         <div className="w-full max-w-[1400px] mx-auto bg-white rounded-[2.5rem] shadow-[0_30px_100px_rgba(15,23,42,0.28)] border border-slate-200/50 overflow-hidden min-h-[80vh] flex flex-col justify-center">
 
           {currentView === 'dashboard' ? (
-            <Dashboard user={user} onLogout={() => { setUser(null); setCurrentView('calculator'); }} />
+            <Dashboard user={user} onLogout={() => { apiService.logoutUser(); setUser(null); setCurrentView('calculator'); }} />
           ) : (
             <>
               {/* Main Grid for Hero and Interactive Card */}
