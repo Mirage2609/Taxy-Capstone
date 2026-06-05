@@ -11,9 +11,19 @@ let db = null;
 let isFirebaseActive = false;
 
 try {
+  let serviceAccount = null;
+
   if (fs.existsSync(SERVICE_ACCOUNT_FILE)) {
-    const serviceAccount = JSON.parse(fs.readFileSync(SERVICE_ACCOUNT_FILE, 'utf-8'));
-    
+    serviceAccount = JSON.parse(fs.readFileSync(SERVICE_ACCOUNT_FILE, 'utf-8'));
+  } else if (process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PROJECT_ID) {
+    serviceAccount = {
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
+    };
+  }
+
+  if (serviceAccount) {
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount)
     });
@@ -25,7 +35,7 @@ try {
     console.log(`===================================================`);
   } else {
     console.log(`===================================================`);
-    console.log(` [Firebase] Peringatan: serviceAccountKey.json tidak ditemukan.`);
+    console.log(` [Firebase] Peringatan: Kredensial Firebase tidak ditemukan.`);
     console.log(` [Firebase] Sistem otomatis beralih ke basis data JSON lokal.`);
     console.log(`===================================================`);
   }
