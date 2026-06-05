@@ -37,3 +37,5 @@ app.listen(PORT, () => {
   console.log(` Taxy API Server running on: http://localhost:${PORT}`);
   console.log(`===================================================`);
 });
+
+export default app;
