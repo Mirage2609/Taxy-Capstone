@@ -41,7 +41,12 @@ app.get('/health', (req, res) => {
   res.json({ 
     status: 'ok', 
     message: 'Taxy API Server is healthy and running.',
-    firebaseActive: isFirebaseActive 
+    firebaseActive: isFirebaseActive,
+    envCheck: {
+      projectIdExists: !!process.env.FIREBASE_PROJECT_ID,
+      clientEmailExists: !!process.env.FIREBASE_CLIENT_EMAIL,
+      privateKeyExists: !!process.env.FIREBASE_PRIVATE_KEY,
+    }
   });
 });
 
