@@ -17,10 +17,19 @@ try {
   if (fs.existsSync(SERVICE_ACCOUNT_FILE)) {
     serviceAccount = JSON.parse(fs.readFileSync(SERVICE_ACCOUNT_FILE, 'utf-8'));
   } else if (process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PROJECT_ID) {
+    let privateKey = process.env.FIREBASE_PRIVATE_KEY.trim();
+    if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+      privateKey = privateKey.substring(1, privateKey.length - 1).trim();
+    }
+    if (privateKey.startsWith("'") && privateKey.endsWith("'")) {
+      privateKey = privateKey.substring(1, privateKey.length - 1).trim();
+    }
+    privateKey = privateKey.replace(/\\n/g, '\n');
+
     serviceAccount = {
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
+      projectId: process.env.FIREBASE_PROJECT_ID.trim(),
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL.trim(),
+      privateKey: privateKey
     };
   }
 
