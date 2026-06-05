@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from './authController.js';
+import { db, isFirebaseActive } from '../config/firebase.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -51,11 +52,24 @@ const writeHistory = (history) => {
 
 export const getHistory = async (req, res) => {
   try {
-    const allHistory = readHistory();
-    // Filter history belonging to active user
-    const userHistory = allHistory.filter(
-      (item) => item.username.toLowerCase() === req.user.username.toLowerCase()
-    );
+    let userHistory = [];
+
+    if (isFirebaseActive) {
+      const snapshot = await db.collection('history')
+        .where('usernameLower', '==', req.user.username.toLowerCase())
+        .get();
+      
+      userHistory = snapshot.docs.map(doc => doc.data());
+      // Sort by id descending (Date.now()) to keep the newest first
+      userHistory.sort((a, b) => b.id - a.id);
+    } else {
+      const allHistory = readHistory();
+      // Filter history belonging to active user
+      userHistory = allHistory.filter(
+        (item) => item.username.toLowerCase() === req.user.username.toLowerCase()
+      );
+    }
+
     return res.json(userHistory);
   } catch (error) {
     return res.status(500).json({ status: 'error', message: error.message });
@@ -64,17 +78,21 @@ export const getHistory = async (req, res) => {
 
 export const saveHistory = async (req, res) => {
   try {
-    const allHistory = readHistory();
-
     const newItem = {
       id: Date.now(),
       username: req.user.username,
+      usernameLower: req.user.username.toLowerCase(),
       timestamp: new Date().toISOString().replace('T', ' ').substring(0, 16),
       ...req.body
     };
 
-    allHistory.unshift(newItem); // Insert at top
-    writeHistory(allHistory);
+    if (isFirebaseActive) {
+      await db.collection('history').doc(String(newItem.id)).set(newItem);
+    } else {
+      const allHistory = readHistory();
+      allHistory.unshift(newItem); // Insert at top
+      writeHistory(allHistory);
+    }
 
     return res.status(201).json({
       status: 'success',
@@ -89,14 +107,28 @@ export const saveHistory = async (req, res) => {
 export const deleteHistory = async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const allHistory = readHistory();
 
-    // Remove targeted item only if it belongs to this user
-    const filteredHistory = allHistory.filter(
-      (item) => !(item.id === id && item.username.toLowerCase() === req.user.username.toLowerCase())
-    );
-
-    writeHistory(filteredHistory);
+    if (isFirebaseActive) {
+      const docRef = db.collection('history').doc(String(id));
+      const doc = await docRef.get();
+      if (doc.exists) {
+        const item = doc.data();
+        if (item.username.toLowerCase() === req.user.username.toLowerCase()) {
+          await docRef.delete();
+        } else {
+          return res.status(403).json({ status: 'error', message: 'Anda tidak memiliki akses untuk menghapus riwayat ini.' });
+        }
+      } else {
+        return res.status(404).json({ status: 'error', message: 'Riwayat tidak ditemukan.' });
+      }
+    } else {
+      const allHistory = readHistory();
+      // Remove targeted item only if it belongs to this user
+      const filteredHistory = allHistory.filter(
+        (item) => !(item.id === id && item.username.toLowerCase() === req.user.username.toLowerCase())
+      );
+      writeHistory(filteredHistory);
+    }
 
     return res.json({
       status: 'success',

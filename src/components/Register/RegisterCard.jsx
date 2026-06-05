@@ -170,7 +170,7 @@ function RegisterCard({ onNavigate }) {
               }}
               className="mt-4 text-xs font-semibold text-slate-400 hover:text-blue-600 transition-colors"
             >
-              Daftar Ulang Akun Baru (Demo)
+              Daftar Akun Lain
             </button>
           </div>
         ) : (

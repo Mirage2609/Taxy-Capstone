@@ -24,4 +24,4 @@ dist-ssr
 *.sw?
 
 # Firebase credentials
-config/serviceAccountKey.json
+be/config/serviceAccountKey.json

@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import jwt from 'jsonwebtoken';
+import { db, isFirebaseActive } from '../config/firebase.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -39,15 +40,30 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ status: 'error', message: 'Semua kolom wajib diisi.' });
     }
 
-    const users = readUsers();
+    let usernameExists = false;
+    let emailExists = false;
 
-    // Check if fullName already exists (case-insensitive)
-    const usernameExists = users.some(
-      (u) => u.fullName.toLowerCase() === fullName.toLowerCase()
-    );
-    const emailExists = users.some(
-      (u) => u.email.toLowerCase() === email.toLowerCase()
-    );
+    if (isFirebaseActive) {
+      const nameQuery = await db.collection('users')
+        .where('fullNameLower', '==', fullName.toLowerCase())
+        .limit(1)
+        .get();
+      usernameExists = !nameQuery.empty;
+
+      const emailQuery = await db.collection('users')
+        .where('emailLower', '==', email.toLowerCase())
+        .limit(1)
+        .get();
+      emailExists = !emailQuery.empty;
+    } else {
+      const users = readUsers();
+      usernameExists = users.some(
+        (u) => u.fullName.toLowerCase() === fullName.toLowerCase()
+      );
+      emailExists = users.some(
+        (u) => u.email.toLowerCase() === email.toLowerCase()
+      );
+    }
 
     if (usernameExists) {
       return res.status(400).json({
@@ -66,14 +82,21 @@ export const registerUser = async (req, res) => {
     const newUser = {
       id: Date.now().toString(),
       fullName,
+      fullNameLower: fullName.toLowerCase(),
       email,
+      emailLower: email.toLowerCase(),
       password, // In professional production, passwords would be hashed. For this capstone, keeping it simple as simulated is excellent.
       jobCategory: jobCategory || 'Freelancer',
       createdAt: new Date().toISOString()
     };
 
-    users.push(newUser);
-    writeUsers(users);
+    if (isFirebaseActive) {
+      await db.collection('users').doc(newUser.id).set(newUser);
+    } else {
+      const users = readUsers();
+      users.push(newUser);
+      writeUsers(users);
+    }
 
     return res.status(201).json({
       status: 'success',
@@ -98,15 +121,42 @@ export const loginUser = async (req, res) => {
       return res.status(400).json({ status: 'error', message: 'Username/Email dan Password wajib diisi.' });
     }
 
-    const users = readUsers();
+    let matchedUser = null;
 
-    // Find matched user
-    const matchedUser = users.find(
-      (u) =>
-        (u.fullName.toLowerCase() === username.toLowerCase() ||
-         u.email.toLowerCase() === username.toLowerCase()) &&
-        u.password === password
-    );
+    if (isFirebaseActive) {
+      // Find user by email first
+      const emailQuery = await db.collection('users')
+        .where('emailLower', '==', username.toLowerCase())
+        .limit(1)
+        .get();
+
+      if (!emailQuery.empty) {
+        const userDoc = emailQuery.docs[0].data();
+        if (userDoc.password === password) {
+          matchedUser = userDoc;
+        }
+      } else {
+        // Find user by fullName
+        const nameQuery = await db.collection('users')
+          .where('fullNameLower', '==', username.toLowerCase())
+          .limit(1)
+          .get();
+        if (!nameQuery.empty) {
+          const userDoc = nameQuery.docs[0].data();
+          if (userDoc.password === password) {
+            matchedUser = userDoc;
+          }
+        }
+      }
+    } else {
+      const users = readUsers();
+      matchedUser = users.find(
+        (u) =>
+          (u.fullName.toLowerCase() === username.toLowerCase() ||
+           u.email.toLowerCase() === username.toLowerCase()) &&
+          u.password === password
+      );
+    }
 
     if (!matchedUser) {
       return res.status(400).json({

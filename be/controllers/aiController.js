@@ -1,5 +1,3 @@
-import { apiService } from '../services/api.js';
-
 // Konfigurasi URL Server Python Model AI
 const PYTHON_API_URL = process.env.PYTHON_API_URL || 'http://127.0.0.1:5001/predict';
 

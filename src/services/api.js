@@ -8,6 +8,14 @@
 const USE_REAL_BACKEND = true;
 const BACKEND_URL = 'http://localhost:5000/api';
 
+const handleNetworkError = (error) => {
+  const msg = error.message || '';
+  if (msg === 'Failed to fetch' || msg.includes('fetch') || msg.includes('NetworkError') || msg.includes('Failed to')) {
+    return new Error('Gagal terhubung ke server. Pastikan server backend Anda aktif atau coba lagi nanti.');
+  }
+  return error;
+};
+
 export const apiService = {
   /**
    * Pendaftaran Akun Baru (POST /api/auth/register)
@@ -25,7 +33,7 @@ export const apiService = {
       if (!response.ok) throw new Error(data.message || 'Pendaftaran gagal');
       return data;
     } catch (error) {
-      throw new Error(error.message);
+      throw handleNetworkError(error);
     }
   },
 
@@ -50,7 +58,7 @@ export const apiService = {
       
       return data;
     } catch (error) {
-      throw new Error(error.message);
+      throw handleNetworkError(error);
     }
   },
 
@@ -87,7 +95,7 @@ export const apiService = {
       if (!response.ok) throw new Error(data.message || 'Gagal menghitung pajak di server.');
       return data.data;
     } catch (error) {
-      throw new Error(error.message);
+      throw handleNetworkError(error);
     }
   },
 
@@ -108,7 +116,7 @@ export const apiService = {
       if (!response.ok) throw new Error(data.error || 'Gagal memproses penjelasan AI.');
       return data.data;
     } catch (error) {
-      throw new Error(error.message);
+      throw handleNetworkError(error);
     }
   },
 
@@ -131,7 +139,7 @@ export const apiService = {
       if (!response.ok) throw new Error(data.message || 'Gagal mengambil riwayat');
       return data;
     } catch (error) {
-      throw new Error(error.message);
+      throw handleNetworkError(error);
     }
   },
 
@@ -156,7 +164,7 @@ export const apiService = {
       if (!response.ok) throw new Error(data.message || 'Gagal menyimpan kalkulasi');
       return data;
     } catch (error) {
-      throw new Error(error.message);
+      throw handleNetworkError(error);
     }
   },
 
@@ -180,7 +188,7 @@ export const apiService = {
       if (!response.ok) throw new Error(data.message || 'Gagal menghapus riwayat');
       return data;
     } catch (error) {
-      throw new Error(error.message);
+      throw handleNetworkError(error);
     }
   },
 };

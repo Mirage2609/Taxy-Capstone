@@ -15,12 +15,12 @@ function Dashboard({ user, onLogout }) {
 
   // === CALCULATOR INPUT STATES ===
   const [jenisPajak, setJenisPajak] = useState('PPH21');
-  const [gaji, setGaji] = useState(8000000); // Gaji Bulanan default Rp8.000.000
+  const [gaji, setGaji] = useState(0); // Gaji Bulanan default 0
   const [status, setStatus] = useState('TK/0');
   const [tanggungan, setTanggungan] = useState('0');
 
   // PPh 23 states
-  const [bruto, setBruto] = useState(10000000); // Default Rp10.000.000
+  const [bruto, setBruto] = useState(0); // Default 0
   const [jenisObjek, setJenisObjek] = useState('0.02');
   const [adaNpwp, setAdaNpwp] = useState(true);
 
@@ -253,7 +253,7 @@ function Dashboard({ user, onLogout }) {
               {/* Welcome Greetings Header */}
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <h2 className="text-3xl font-black text-slate-900 tracking-tight select-none">
-                  Halo, Pajakers!! 👋
+                  Halo, {user?.username || 'Pajakers'}! 👋
                 </h2>
               </div>
 

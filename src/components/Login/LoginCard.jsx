@@ -98,7 +98,7 @@ function LoginCard({ onNavigate, onLoginSuccess }) {
               }}
               className="px-6 py-2.5 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition font-semibold text-sm"
             >
-              Keluar / Ulangi Demo
+              Kembali
             </button>
           </div>
         ) : (
@@ -163,11 +163,6 @@ function LoginCard({ onNavigate, onLoginSuccess }) {
                 </span>
               </p>
             </div>
-
-            {/* Demo Hint */}
-            <p className="text-center text-xs text-slate-400 mt-4 font-medium">
-              Demo login: ketik username apa saja untuk masuk
-            </p>
           </form>
         )}
         
