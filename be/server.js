@@ -8,8 +8,14 @@ import aiRoutes from './routes/aiRoutes.js';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Cukup SATU aturan CORS di sini
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173', '*'],
+  origin: [
+    'http://localhost:5173', 
+    'http://localhost:5174', 
+    'http://127.0.0.1:5173',
+    'https://taxy-capstone-app-azkakuputra-6634s-projects.vercel.app' // URL Front-End Vercel kamu
+  ],
   credentials: true
 }));
 

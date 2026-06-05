@@ -2,11 +2,11 @@
  * Taxy Capstone RESTful API Client Service
  * 
  * File ini bertindak sebagai service layer untuk berkomunikasi dengan RESTful API asli di Backend.
- * Terkoneksi langsung dengan Express Server pada http://localhost:5000/api.
+ * Terkoneksi langsung dengan Express Server pada https://taxy-three.vercel.app/api.
  */
 
 const USE_REAL_BACKEND = true;
-const BACKEND_URL = 'http://localhost:5000/api';
+const BACKEND_URL = 'https://taxy-three.vercel.app/api';
 
 const handleNetworkError = (error) => {
   const msg = error.message || '';
