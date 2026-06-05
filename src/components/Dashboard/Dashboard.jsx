@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import Sidebar from './Dashboard/Sidebar';
-import Topbar from './Dashboard/Topbar';
-import SummaryCards from './Dashboard/SummaryCards';
-import StructureChart from './Dashboard/StructureChart';
-import QuickCalculator from './Dashboard/QuickCalculator';
-import IncomeComposition from './Dashboard/IncomeComposition';
-import HistoryList from './Dashboard/HistoryList';
-import Chatbot from './Dashboard/Chatbot';
-import { apiService } from '../services/api';
+import Sidebar from './Sidebar';
+import Topbar from './Topbar';
+import SummaryCards from './SummaryCards';
+import StructureChart from './StructureChart';
+import QuickCalculator from './QuickCalculator';
+import IncomeComposition from './IncomeComposition';
+import HistoryList from './HistoryList';
+import Chatbot from './Chatbot';
+import { apiService } from '../../services/api';
 
 function Dashboard({ user, onLogout }) {
   const [activeTab, setActiveTab] = useState('dashboard');

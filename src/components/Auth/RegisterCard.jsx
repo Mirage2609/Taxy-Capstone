@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import RegisterHeader from './RegisterHeader';
-import InputField from '../Login/InputField';
-import LoginButton from '../Login/LoginButton';
+import InputField from './InputField';
+import LoginButton from './LoginButton';
 import { apiService } from '../../services/api';
 
 function RegisterCard({ onNavigate }) {

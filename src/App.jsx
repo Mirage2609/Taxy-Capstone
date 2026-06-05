@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import Calculator from './components/Calculator';
-import LoginCard from './components/Login/LoginCard';
-import RegisterCard from './components/Register/RegisterCard';
-import ProblemSection from './components/ProblemSection';
-import SolutionSection from './components/SolutionSection';
-import Dashboard from './components/Dashboard';
-import FeatureSection from './components/FeatureSection';
-import EdukasiSection from './components/EdukasiSection';
-import CaraKerjaSection from './components/CaraKerjaSection';
-import CTASection from './components/CTASection';
-import FAQSection from './components/FAQSection';
-import Footer from './components/Footer';
+import Navbar from './components/Landing/Navbar';
+import Hero from './components/Landing/Hero';
+import Calculator from './components/Landing/Calculator';
+import LoginCard from './components/Auth/LoginCard';
+import RegisterCard from './components/Auth/RegisterCard';
+import ProblemSection from './components/Landing/ProblemSection';
+import SolutionSection from './components/Landing/SolutionSection';
+import Dashboard from './components/Dashboard/Dashboard';
+import FeatureSection from './components/Landing/FeatureSection';
+import EdukasiSection from './components/Landing/EdukasiSection';
+import CaraKerjaSection from './components/Landing/CaraKerjaSection';
+import CTASection from './components/Landing/CTASection';
+import FAQSection from './components/Landing/FAQSection';
+import Footer from './components/Landing/Footer';
 import { apiService } from './services/api';
 
 function App() {
