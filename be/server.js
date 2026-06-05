@@ -38,6 +38,7 @@ app.use('/api/ai', aiRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
+  const pk = process.env.FIREBASE_PRIVATE_KEY || '';
   res.json({ 
     status: 'ok', 
     message: 'Taxy API Server is healthy and running.',
@@ -46,7 +47,14 @@ app.get('/health', (req, res) => {
     envCheck: {
       projectIdExists: !!process.env.FIREBASE_PROJECT_ID,
       clientEmailExists: !!process.env.FIREBASE_CLIENT_EMAIL,
-      privateKeyExists: !!process.env.FIREBASE_PRIVATE_KEY,
+      privateKeyExists: !!pk,
+    },
+    privateKeyDebug: {
+      length: pk.length,
+      startsWith: pk.substring(0, 30),
+      endsWith: pk.substring(Math.max(0, pk.length - 30)),
+      containsLiteralNewlines: pk.includes('\n'),
+      containsEscapedNewlines: pk.includes('\\n'),
     }
   });
 });
