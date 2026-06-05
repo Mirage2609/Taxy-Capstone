@@ -99,6 +99,43 @@ function Dashboard({ user, onLogout }) {
   const takeHomePay = jenisPajak === 'PPH21' ? resPph21.thp : resPph23.thp;
   const totalGaji = jenisPajak === 'PPH21' ? gaji : bruto;
 
+  // === STATE HASIL INSIGHT AI ===
+  const [aiInsight, setAiInsight] = useState('Memuat analisis...');
+  const [isAiLoading, setIsAiLoading] = useState(false);
+
+  // Mengambil penjelasan AI saat data perhitungan berubah
+  useEffect(() => {
+    const fetchAiInsight = async () => {
+      // Abaikan pemanggilan jika gaji/bruto masih kosong
+      if (jenisPajak === 'PPH21' && gaji === 0) {
+        setAiInsight('Masukkan gaji bulanan Anda untuk mendapatkan analisis AI.');
+        return;
+      }
+      if (jenisPajak === 'PPH23' && bruto === 0) {
+        setAiInsight('Masukkan bruto jasa Anda untuk mendapatkan analisis AI.');
+        return;
+      }
+
+      setIsAiLoading(true);
+      try {
+        const activeTaxData = jenisPajak === 'PPH21'
+          ? { ...resPph21, jenisPajak: 'PPH21', gaji }
+          : { ...resPph23, jenisPajak: 'PPH23', bruto, adaNpwp };
+
+        const explanationData = await apiService.getAiExplanation(activeTaxData, jenisPajak);
+        setAiInsight(explanationData.explanation);
+      } catch (err) {
+        console.error("Gagal mendapatkan insight AI:", err);
+        setAiInsight("Terjadi masalah saat memuat analisis AI.");
+      } finally {
+        setIsAiLoading(false);
+      }
+    };
+
+    const timer = setTimeout(fetchAiInsight, 300); // Debounce call
+    return () => clearTimeout(timer);
+  }, [jenisPajak, resPph21, resPph23, gaji, bruto, adaNpwp]);
+
   const handleSaveToHistory = async () => {
     if (!user?.username) {
       alert("Sesi user tidak aktif!");
@@ -253,14 +290,23 @@ function Dashboard({ user, onLogout }) {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 21m0 0l-.813-5.096L3 15.093m6 0.811L15.093 15 21 15.813m-6.813-5.096L15 3m0 0l.813 5.096L21 9.813M15 8.13L8.907 9 3 8.188" />
                       </svg>
                     </div>
-                    <div className="space-y-1">
-                      <h4 className="text-sm font-extrabold text-slate-800">Insight untuk kamu</h4>
-                      <p className="text-xs font-semibold text-slate-600 leading-relaxed transition-all duration-300">
-                        {jenisPajak === 'PPH21' 
-                          ? `Pajak bulanan kamu terhitung sebesar ${formatRupiah(pajakBulanan)} karena penghasilan tahunanmu setelah dikurangi PTKP menyisakan PKP ${formatRupiah(resPph21.pkp)} yang masuk ke dalam lapisan tarif progresif ${resPph21.persentase}. Jika gaji bulanan naik, persentase pajak bisa meningkat.`
-                          : `Pemotongan PPh 23 bruto atas jasa/royalti bernilai ${formatRupiah(resPph23.potongan)} (${resPph23.tarifAkhir}%). ${adaNpwp ? 'Tarif optimal karena Anda menyertakan NPWP.' : 'Tarif dipotong 100% lebih tinggi karena Anda tidak memiliki/mencantumkan NPWP.'}`
-                        }
-                      </p>
+                    <div className="space-y-1 w-full">
+                      <h4 className="text-sm font-extrabold text-slate-800 flex items-center gap-1.5">
+                        <span>Insight Pajak AI</span>
+                        {isAiLoading && (
+                          <span className="inline-flex h-2 w-2 rounded-full bg-purple-600 animate-ping"></span>
+                        )}
+                      </h4>
+                      {isAiLoading ? (
+                        <div className="space-y-2 py-1.5 animate-pulse">
+                          <div className="h-2.5 bg-purple-200/60 rounded-full w-full"></div>
+                          <div className="h-2.5 bg-purple-200/60 rounded-full w-[85%]"></div>
+                        </div>
+                      ) : (
+                        <p className="text-xs font-semibold text-slate-600 leading-relaxed transition-all duration-300">
+                          {aiInsight}
+                        </p>
+                      )}
                     </div>
                   </div>
 

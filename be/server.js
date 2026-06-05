@@ -3,11 +3,11 @@ import cors from 'cors';
 import authRoutes from './routes/authRoutes.js';
 import taxRoutes from './routes/taxRoutes.js';
 import historyRoutes from './routes/historyRoutes.js';
+import aiRoutes from './routes/aiRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Configure CORS to allow access from local Capstone frontend (Vite)
 app.use(cors({
   origin: ['http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173', '*'],
   credentials: true
@@ -19,6 +19,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/tax', taxRoutes);
 app.use('/api/history', historyRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

@@ -92,6 +92,27 @@ export const apiService = {
   },
 
   /**
+   * Mengambil Penjelasan Analisis Pajak dari Backend (POST /api/ai/explanation)
+   * @param {Object} taxData - Hasil detail data pajak
+   * @param {string} category - Kategori (misal 'PPH21' atau 'PPH23')
+   * @returns {Promise<Object>} Respon analisis penjelasan AI
+   */
+  getAiExplanation: async (taxData, category) => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/ai/explanation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ taxData, category }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Gagal memproses penjelasan AI.');
+      return data.data;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  },
+
+  /**
    * Mengambil Daftar Riwayat Pajak (GET /api/history)
    * @param {string} username - Nama user (hanya untuk fallback, aslinya terverifikasi via JWT)
    * @returns {Promise<Array>} Daftar riwayat perpajakan user
