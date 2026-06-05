@@ -16,21 +16,36 @@ try {
 
   if (fs.existsSync(SERVICE_ACCOUNT_FILE)) {
     serviceAccount = JSON.parse(fs.readFileSync(SERVICE_ACCOUNT_FILE, 'utf-8'));
-  } else if (process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PROJECT_ID) {
+  } else if (process.env.FIREBASE_PRIVATE_KEY) {
     let privateKey = process.env.FIREBASE_PRIVATE_KEY.trim();
-    if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
-      privateKey = privateKey.substring(1, privateKey.length - 1).trim();
+    if (privateKey.startsWith('{')) {
+      try {
+        const parsedJson = JSON.parse(privateKey);
+        serviceAccount = {
+          projectId: parsedJson.project_id,
+          clientEmail: parsedJson.client_email,
+          privateKey: (parsedJson.private_key || '').replace(/\\n/g, '\n')
+        };
+      } catch (err) {
+        // Gagal parse JSON, abaikan dan lanjut ke string biasa
+      }
     }
-    if (privateKey.startsWith("'") && privateKey.endsWith("'")) {
-      privateKey = privateKey.substring(1, privateKey.length - 1).trim();
-    }
-    privateKey = privateKey.replace(/\\n/g, '\n');
 
-    serviceAccount = {
-      projectId: process.env.FIREBASE_PROJECT_ID.trim(),
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL.trim(),
-      privateKey: privateKey
-    };
+    if (!serviceAccount && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PROJECT_ID) {
+      if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+        privateKey = privateKey.substring(1, privateKey.length - 1).trim();
+      }
+      if (privateKey.startsWith("'") && privateKey.endsWith("'")) {
+        privateKey = privateKey.substring(1, privateKey.length - 1).trim();
+      }
+      privateKey = privateKey.replace(/\\n/g, '\n');
+
+      serviceAccount = {
+        projectId: process.env.FIREBASE_PROJECT_ID.trim(),
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL.trim(),
+        privateKey: privateKey
+      };
+    }
   }
 
   if (serviceAccount) {
