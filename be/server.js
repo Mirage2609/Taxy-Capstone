@@ -4,6 +4,7 @@ import authRoutes from './routes/authRoutes.js';
 import taxRoutes from './routes/taxRoutes.js';
 import historyRoutes from './routes/historyRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
+import { isFirebaseActive } from './config/firebase.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -37,7 +38,11 @@ app.use('/api/ai', aiRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Taxy API Server is healthy and running.' });
+  res.json({ 
+    status: 'ok', 
+    message: 'Taxy API Server is healthy and running.',
+    firebaseActive: isFirebaseActive 
+  });
 });
 
 // Global Error Handler to prevent crash
