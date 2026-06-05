@@ -9,6 +9,7 @@ const SERVICE_ACCOUNT_FILE = path.join(__dirname, 'serviceAccountKey.json');
 
 let db = null;
 let isFirebaseActive = false;
+let firebaseInitError = null;
 
 try {
   let serviceAccount = null;
@@ -40,8 +41,9 @@ try {
     console.log(`===================================================`);
   }
 } catch (error) {
+  firebaseInitError = error.message || String(error);
   console.error(` [Firebase] Gagal melakukan inisialisasi:`, error);
   console.log(` [Firebase] Sistem otomatis beralih ke basis data JSON lokal.`);
 }
 
-export { db, isFirebaseActive };
+export { db, isFirebaseActive, firebaseInitError };

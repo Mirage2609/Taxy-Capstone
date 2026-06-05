@@ -4,7 +4,7 @@ import authRoutes from './routes/authRoutes.js';
 import taxRoutes from './routes/taxRoutes.js';
 import historyRoutes from './routes/historyRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
-import { isFirebaseActive } from './config/firebase.js';
+import { isFirebaseActive, firebaseInitError } from './config/firebase.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -42,6 +42,7 @@ app.get('/health', (req, res) => {
     status: 'ok', 
     message: 'Taxy API Server is healthy and running.',
     firebaseActive: isFirebaseActive,
+    firebaseInitError: firebaseInitError,
     envCheck: {
       projectIdExists: !!process.env.FIREBASE_PROJECT_ID,
       clientEmailExists: !!process.env.FIREBASE_CLIENT_EMAIL,
