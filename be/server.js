@@ -10,12 +10,20 @@ const PORT = process.env.PORT || 5000;
 
 // Cukup SATU aturan CORS di sini
 app.use(cors({
-  origin: [
-    'http://localhost:5173', 
-    'http://localhost:5174', 
-    'http://127.0.0.1:5173',
-    'https://taxy-capstone-app-azkakuputra-6634s-projects.vercel.app' // URL Front-End Vercel kamu
-  ],
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const allowedPatterns = [
+      /^http:\/\/localhost:\d+$/,
+      /^http:\/\/127\.0\.0\.1:\d+$/,
+      /\.vercel\.app$/
+    ];
+    const isAllowed = allowedPatterns.some(pattern => pattern.test(origin));
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 
